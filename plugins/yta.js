@@ -1,142 +1,181 @@
 /*
-*<>YTDL AUDIO<>*
-SOURCE: https://whatsapp.com/channel/0029VaJYWMb7oQhareT7F40V
-DON'T DELETE THIS WM!
-HAPUS WM MANDUL 7 TURUNAN 
-"aku janji tidak akan hapus wm ini"
-JUM'AT, 11 OKTOBER 2024 08:10
-*/
-import yts from 'yt-search';
-import axios from 'axios';
+*<>YTMP3<>*
+  Created scrape by daffa https://whatsapp.com/channel/0029VaiVeWA8vd1HMUcb6k2S/109
 
+  Source: https://whatsapp.com/channel/0029VaJYWMb7oQhareT7F40V
+GROUP: 
+https://chat.whatsapp.com/ETZ8r7CLypfAPH93q0gC0y
+
+*DON'T DELETE THIS WM!*
+BEBAS RECODE,ASAL NI WM JANGAN DIHAPUS!😤
+*_AKU JANJI TIDAK AKAN HAPUS WM INI_*
+*/
+
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+
+class Fuck extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = "Fuck";
+    }
+}
+
+class API {
+    constructor(details, downloads) {
+        this.endpoints = { info: details, download: downloads };
+    }
+
+    headers(custom = {}) {
+        return {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Postify/1.0.0',
+            'Referer': 'https://ytiz.xyz/',
+            ...custom
+        };
+    }
+
+    handleError(error, context) {
+        const errors = error.response ? JSON.stringify(error.response.data || error.errors) : error.errors;
+        console.error(`Error in ${context}:`, errors);
+        throw new Fuck(errors);
+    }
+}
+
+class YTMP3 extends API {
+    constructor() { 
+        super('https://m8.fly.dev/api/info', 'https://m8.fly.dev/api/download'); 
+    }
+
+    async request(endpoint, payload) {
+        try {
+            const { data } = await axios.post(this.endpoints[endpoint], payload, { headers: this.headers() });
+            return data;
+        } catch (error) { 
+            this.handleError(error, endpoint); 
+        }
+    }
+
+    async fetchDetails(videoUrl, format) {
+        return this.request('info', { url: videoUrl, format, startTime: 0, endTime: 0 });
+    }
+
+    async downloadAudio(videoUrl, quality, filename, randomID, format) {
+        return this.request('download', {
+            url: videoUrl,
+            quality,
+            metadata: true,
+            filename,
+            randID: randomID,
+            trim: false,
+            startTime: 0,
+            endTime: 0,
+            format
+        });
+    }
+
+    validParams(format, quality) {
+        const formats = ['m4a', 'mp3', 'flac'];
+        const qualities = ['32', '64', '128', '192', '256', '320'];
+
+        if (!formats.includes(format)) {
+            throw new Error(`Salah! Pilih salah satu opsi ini : ${formats.join(', ')}`);
+        }
+
+        if (!qualities.includes(quality)) {
+            throw new Error(`Salah! Pilih salah satu opsi ini : ${qualities.join(', ')}`);
+        }
+    }
+
+    async exec(videoUrl, format = 'mp3', quality = '128') {
+        this.validParams(format, quality);
+
+        const videoInfo = await this.fetchDetails(videoUrl, format);
+        const audioData = await this.downloadAudio(videoUrl, quality, videoInfo.filename, videoInfo.randID, format);
+        console.log(audioData);
+
+        // Send request to get the audio buffer
+        const response = await axios.post('https://m8.fly.dev/api/file_send', {
+            filepath: audioData.filepath,
+            randID: audioData.randID
+        }, { responseType: 'arraybuffer' }); // Make sure to request an arraybuffer
+
+        return {
+            buffer: Buffer.from(response.data), // Return the audio buffer
+            thumbnail: videoInfo.thumbnail, // Include the video thumbnail
+            title: videoInfo.title // Include the video title
+        };
+    }
+
+    static async download(videoUrl, format = 'mp3', quality = '128') {
+        const downloader = new YTMP3();
+        return await downloader.exec(videoUrl, format, quality).catch(err => {
+            console.error(err.errors);
+        });
+    }
+}
+
+// Handler function for WhatsApp bot
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) throw `Penggunaan:\n${usedPrefix + command} <link/query>\n\nContoh:\n${usedPrefix + command} https://youtube.com/watch?v=dQw4w9WgXcQ\n${usedPrefix + command} Rick Astley`;
+    if (!text) throw `Contoh penggunaan: ${usedPrefix + command} <link>`;
+conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key } });
+    const videoUrl = text.trim();
+    const format = 'mp3';  // Default format can be modified
+    const quality = '128'; // Default quality can be modified
 
     try {
-    conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
-        const result = await YTMate(text);
+        const { buffer: audioBuffer, thumbnail, title } = await YTMP3.download(videoUrl, format, quality);
 
-        if (result.type === 'search') {
-            let searchResults = result.videos.map((v, i) => `${i + 1}. *${v.title}* (${v.views} views)\nLink: ${v.url}`).join('\n\n');
-            m.reply(`Hasil pencarian untuk "${result.query}":\n\n${searchResults}`);
-        } else if (result.type === 'download') {
-            const { title, url, seconds, views, dl } = result.download;
+        if (!audioBuffer) throw 'Gagal mendownload audio!';
 
-            // Mengambil audio (MP3) dengan resolusi terkecil
-            const look = await yts(text);
-            const convert = look.videos[0];
-            let audioResolutions = Object.keys(dl.mp3); // Semua resolusi audio (mp3)
-            if (audioResolutions.length === 0) throw new Error('Tidak ada format MP3 yang tersedia.');
+        const doc = {
+            audio: audioBuffer,
+            mimetype: 'audio/mp4', // Change mimetype if necessary
+            fileName: `${title}`,
+            contextInfo: {
+                externalAdReply: {
+                    showAdAttribution: true,
+                    mediaType: 2,
+                    mediaUrl: videoUrl,
+                    title: title,
+                    sourceUrl: videoUrl,
+                    thumbnail: await (await conn.getFile(thumbnail)).data
+                }
+            }
+        };
 
-            let smallestAudio = audioResolutions[audioResolutions.length - 1]; // Pilih resolusi terkecil (resolusi terakhir)
-            const audioLink = await dl.mp3[smallestAudio]();
-await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
-            // Mengirim audio sebagai file MP3
-            await conn.sendMessage(m.chat, {
-        audio: {
-          url: audioLink.url
-        },
-        mimetype: 'audio/mpeg',
-        contextInfo: {
-          externalAdReply: {
-            title: convert.title,
-            body: "",
-            thumbnailUrl: convert.image,
-            sourceUrl: audioLink.url,
-            mediaType: 1,
-            showAdAttribution: true,
-            renderLargerThumbnail: true
-          }
-        }
-      }, {
-        quoted: m
-      });
+        await conn.sendMessage(m.chat, doc, { quoted: m });
+        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+
+        // Clean up temporary files if necessary
+        fs.unlink(`${path.join(process.cwd(), 'downloads')}/${title}.mp3`, (err) => {
+            if (err) {
+                console.error(`Failed to delete audio file: ${err}`);
+            } else {
+                console.log(`Deleted audio file: ${path.join(process.cwd(), 'downloads')}/${title}.mp3`);
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        throw '❌ Gagal mendownload audio!';
     }
-  } catch (e) {
-    conn.reply(m.chat, `*Error:* ` + e.message, m);
-  }
-};
+}
 
-handler.command = handler.help = ['yta', 'ytmp3', 'ytaudio'];
-handler.tags = ['downloader'];
-handler.exp = 0;
-handler.limit = true;
-handler.premium = false;
+handler.help = ["ytmp3"];
+handler.tags = ["downloader"];
+handler.command = ['ytmp3', 'yta', 'ytaudio'];
 
 export default handler;
-
 /*
-*SCRAPE BY KAVIAN*:  https://whatsapp.com/channel/0029Vac0YNgAjPXNKPXCvE2e/723
-*REMAKE BY DAFFA*: https://whatsapp.com/channel/0029VaiVeWA8vd1HMUcb6k2S/187
-*/
-const extractVid = (data) => {
-    const match = /(?:youtu\.be\/|youtube\.com(?:.*[?&]v=|.*\/))([^?&]+)/.exec(data);
-    return match ? match[1] : null;
-};
+*<>YTMP3<>*
+  Created scrape by daffa https://whatsapp.com/channel/0029VaiVeWA8vd1HMUcb6k2S/109
 
-const info = async (id) => {
-    const { title, description, url, videoId, seconds, timestamp, views, genre, uploadDate, ago, image, thumbnail, author } = await yts({ videoId: id });
-    return { title, description, url, videoId, seconds, timestamp, views, genre, uploadDate, ago, image, thumbnail, author };
-};
+  Source: https://whatsapp.com/channel/0029VaJYWMb7oQhareT7F40V
+GROUP: 
+https://chat.whatsapp.com/ETZ8r7CLypfAPH93q0gC0y
 
-const downloadLinks = async (id) => {
-    const headers = {
-        Accept: "*/*",
-        Origin: "https://id-y2mate.com",
-        Referer: `https://id-y2mate.com/${id}`,
-        'User-Agent': 'Postify/1.0.0',
-        'X-Requested-With': 'XMLHttpRequest',
-    };
-
-    const response = await axios.post('https://id-y2mate.com/mates/analyzeV2/ajax', new URLSearchParams({
-        k_query: `https://youtube.com/watch?v=${id}`,
-        k_page: 'home',
-        q_auto: 0,
-    }), { headers });
-
-    if (!response.data || !response.data.links) throw new Error('Gak ada response dari api nya 😮‍💨 ');
-
-    return Object.entries(response.data.links).reduce((acc, [format, links]) => {
-        acc[format] = Object.fromEntries(Object.values(links).map(option => [
-            option.q || option.f, 
-            async () => {
-                const res = await axios.post('https://id-y2mate.com/mates/convertV2/index', new URLSearchParams({ vid: id, k: option.k }), { headers });
-                if (res.data.status !== 'ok') throw new Error('Cukup tau aja yak.. error bree');
-                return { size: option.size, format: option.f, url: res.data.dlink };
-            }
-        ]));
-        return acc;
-    }, { mp3: {}, mp4: {} });
-};
-
-const search = async (query) => {
-    const videos = await yts(query).then(v => v.videos);
-    return videos.map(({ videoId, views, url, title, description, image, thumbnail, seconds, timestamp, ago, author }) => ({
-        title, id: videoId, url,
-        media: { thumbnail: thumbnail || "", image },
-        description, duration: { seconds, timestamp }, published: ago, views, author
-    }));
-};
-
-const YTMate = async (data) => {
-    if (!data.trim()) throw new Error('Gausah bertele tele, tinggal masukin aja link youtube atau query yg mau dicari...');
-    const isLink = /youtu(\.)?be/.test(data);
-    if (isLink) {
-        const id = extractVid(data);
-        if (!id) throw new Error('Error ceunah bree, ID nya gak adaa');
-        const videoInfo = await info(id);
-        const links = await downloadLinks(id); // Ubah ke 'links' agar tidak terjadi konflik nama variabel
-        return { type: 'download', download: { ...videoInfo, dl: links } };
-    } else {
-        const videos = await search(data);
-        return { type: 'search', query: data, total: videos.length, videos };
-    }
-};
-/*
-*<>YTDL AUDIO<>*
-SOURCE: https://whatsapp.com/channel/0029VaJYWMb7oQhareT7F40V
-DON'T DELETE THIS WM!
-HAPUS WM MANDUL 7 TURUNAN 
-"aku janji tidak akan hapus wm ini"
-JUM'AT, 11 OKTOBER 2024 08:10
+*DON'T DELETE THIS WM!*
+BEBAS RECODE,ASAL NI WM JANGAN DIHAPUS!😤
+*_AKU JANJI TIDAK AKAN HAPUS WM INI_*
 */
