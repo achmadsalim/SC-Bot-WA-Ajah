@@ -2,76 +2,130 @@ import fs from 'fs'
 import fetch from 'node-fetch'
 import axios from 'axios'
 import moment from 'moment-timezone'
-import knights from 'knights-canvas'
 
-let handler = m => m
+function pickRandom(list) {
+    return list[Math.floor(list.length * Math.random())];
+}
+
+function ucapan() {
+    const time = moment.tz('Asia/Jakarta').format('HH');
+    if (time >= 18) return "Selamat malam🌃";
+    if (time >= 15) return "Selamat sore🌇";
+    if (time >= 10) return "Selamat siang🌅";
+    if (time >= 4) return "Selamat pagi⛅";
+    return "Selamat Dini hari🌌";
+}
+
+global.pickRandom = pickRandom;
+
+global.getBuffer = async function getBuffer(url, options = {}) {
+    try {
+        const res = await axios({
+            method: "get",
+            url,
+            headers: {
+                'DNT': 1,
+                'User-Agent': 'GoogleBot',
+                'Upgrade-Insecure-Request': 1
+            },
+            ...options,
+            responseType: 'arraybuffer'
+        });
+        return Buffer.from(res.data);
+    } catch (e) {
+        console.error(`Error: ${e}`);
+        return null;
+    }
+};
+
+let handler = m => m;
+
 handler.all = async function (m) {
-    let name = await conn.getName(m.sender) 
-	let pp = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
+    const name = await conn.getName(m.sender) 
+	let pp;
 	try {
 		pp = await this.profilePictureUrl(m.sender, 'image')
 	} catch (e) {
-	} finally {
-		
-                //global.bg = await (await fetch(img)).buffer()
-		global.doc = pickRandom(["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/msword", "application/pdf", "application/vnd.android.package-archive", "application/zip"])
-		global.pic = 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg'
-		global.fla = flaaa.getRandom()
-                global.social = pickRandom([global.sgh, global.sig, global.snh, global.sgc]) 
-
-		// Module 
-		global.fetch = (await import('node-fetch')).default
-		global.bochil = await import('@bochilteam/scraper')
-		
-                // Function
-                global.pickRandom = function pickRandom(list) {
-  return list[Math.floor(list.length * Math.random())]
-}
-
-                global.getBuffer = async function getBuffer(url, options) {
-	try {
-		options ? options : {}
-		var res = await axios({
-			method: "get",
-			url,
-			headers: {
-				'DNT': 1,
-				'User-Agent': 'GoogleBot',
-				'Upgrade-Insecure-Request': 1
-			},
-			...options,
-			responseType: 'arraybuffer'
-		})
-		return res.data
-	} catch (e) {
-		console.log(`Error : ${e}`)
+	    pp = 'https://artikel.rumah123.com/wp-content/uploads/sites/41/2023/09/12160753/gambar-foto-profil-whatsapp-kosong.jpg'
 	}
+		
+		// Module 
+    try {
+        console.log('Importing modules...');
+        global.fs = await import('fs');
+        global.fetch = (await import('node-fetch')).default;
+        global.bochil = await import('@bochilteam/scraper');
+        console.log('Modules imported successfully');
+    } catch (e) {
+        console.error(`Error importing modules: ${e}`);
+	global.bochil = {};
+    }
+    
+		global.ucapan = ucapan()
+		global.ephemeral = '86400' // 86400 = 24jam, kalo ingin di hilangkan ganti '86400' jadi 'null' atau ''
+         
+ try {
+    global.adReply = {
+        contextInfo: {
+            forwardingScore: 9999,
+            externalAdReply: {
+                showAdAttribution: true,
+                title: `Hai ${name} ${global.ucapan}`,
+                body: wm,
+                mediaUrl: sgc,
+                description: wm3,
+                previewType: "PHOTO",
+                thumbnail: await (await fetch(pp)).buffer(),
+                sourceUrl: "https://whatsapp.com/channel/0029VaoJb11LikgEpNpBty0e"
+            }
+        }
+    };
+} catch (e) {
+    console.error(`Error setting adReply: ${e}`);
+    global.adReply = {};
+}
+        
+        
+   try { 
+        global.doc = pickRandom(["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/msword", "application/pdf", "application/vnd.android.package-archive", "application/zip"])
+		
+        global.social = pickRandom([global.sgh, global.sig, global.snh, global.sgc]) 
+        try {
+    global.flaa = JSON.parse(fs.readFileSync('./lib/flaming.json'));
+    global.waifu = JSON.parse(fs.readFileSync('./lib/waifu.json'));
+    global.pic = pickRandom(global.waifu); // pastikan waifu didefinisikan
+    global.flaaa = pickRandom(global.flaa); // pastikan flaas didefinisikan
+} catch (e) {
+    console.error(`Error initializing global variables: ${e}`);
 }
 
-		const _uptime = process.uptime() * 1000
-        
-		// ucapan ini mah
-		global.ucapan = ucapan()
+
 		
-		// pesan sementara
-		global.ephemeral = '86400'
-         
-		global.adReply = {
-			contextInfo: {
-				forwardingScore: 9999,
-				externalAdReply: {
-                    showAdAttribution: true,
-					title: '',
-					body: 'MIKA-AI', 
-					mediaUrl: sgc,
-					description: 'MIKA-AI', 
-					previewType: "PHOTO",
-					thumbnail: await (await fetch(pic)).buffer(),
-					sourceUrl: 'https://s.id/rapikzhahay'			
-				}
-			}
-		}
-                global.flocation = {
+		global.fakeig = {
+         contextInfo: { externalAdReply: { showAdAttribution: true,
+            mediaUrl: global.sig,
+            mediaType: "VIDEO",
+            description: global.sig, 
+            title: wm3,
+            body: wm,
+            thumbnailUrl: pp,
+            sourceUrl: sig
+    }
+    } }
+global.fakefb = {
+         contextInfo: { externalAdReply: { showAdAttribution: true,
+            mediaUrl: "https://Facebook.com/zuck",
+            mediaType: "VIDEO",
+            description: "https://www.Facebook.com/zuck", 
+            title: wm3,
+            body: wm,
+            thumbnailUrl: pp,
+            sourceUrl: sgc
+    }
+    } }
+		// Fake Reply/Quoted
+		
+		global.flocation = {
 	key : {
            participant : '0@s.whatsapp.net'
                         },
@@ -108,30 +162,7 @@ handler.all = async function (m) {
 					}
 				}
 			}
-		global.fakeig = {
-         contextInfo: { externalAdReply: { showAdAttribution: true,
-            mediaUrl: global.sig,
-            mediaType: "VIDEO",
-            description: global.sig, 
-            title: wm3,
-            body: wm,
-            thumbnailUrl: pp,
-            sourceUrl: sig
-    }
-    } }
-global.fakefb = {
-         contextInfo: { externalAdReply: { showAdAttribution: true,
-            mediaUrl: "https://Facebook.com/zuck",
-            mediaType: "VIDEO",
-            description: "https://www.Facebook.com/zuck", 
-            title: wm3,
-            body: wm,
-            thumbnailUrl: pp,
-            sourceUrl: sgc
-    }
-    } }
-		// Fake ðŸ¤¥
-		global.ftroli = { key: { remoteJid: 'status@broadcast', participant: '0@s.whatsapp.net' }, message: { orderMessage: { itemCount: 2023, status: 1, thumbnail: await conn.resize(await getBuffer(thumb),300,150), surface: 1, message: wm, orderTitle: wm, sellerJid: '0@s.whatsapp.net' } } }
+		global.ftroli = { key: { remoteJid: 'status@broadcast', participant: '0@s.whatsapp.net' }, message: { orderMessage: { itemCount: 2023, status: 1, thumbnail: await conn.resize(thumb,300,150), surface: 1, message: wm, orderTitle: wm, sellerJid: '0@s.whatsapp.net' } } }
 		global.fkontak = { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJid: `status@broadcast` } : {}) }, message: { 'contactMessage': { 'displayName': wm, 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:XL;${wm},;;;\nFN:${wm},\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabell:Ponsel\nEND:VCARD`, 'jpegThumbnail': fs.readFileSync('./thumbnail.jpg'), thumbnail: fs.readFileSync('./thumbnail.jpg'),sendEphemeral: true}}}
         global.fvn = {
             key: { 
@@ -225,7 +256,7 @@ global.fakefb = {
                "groupInviteMessage": {
                    "groupJid": "6285736178354-1625305606@g.us",
                    "inviteCode": "null",
-                   "groupName": "Kawan-kawan", 
+                   "groupName": "Kawan Elaina", 
                    "caption": wm, 
                    'jpegThumbnail': fs.readFileSync('./thumbnail.jpg')
                }
@@ -285,32 +316,9 @@ global.fakefb = {
 			                   // Get Random
 		                     global.fakes = pft.getRandom()
 		        
-	}
-}
+	} catch (e) {
+        console.error(`Error in handler.all: ${e}`);
+    }
+};
 
-export default handler 
-
-function ucapan() {
-	const time = moment.tz('Asia/Jakarta').format('HH')
-	let res = "sᴇʟᴀᴍᴀᴛ ᴍᴀʟᴀᴍ 🌌"
-	if(time >= 1) {
-		res = "sᴇʟᴀᴍᴀᴛ ᴅɪɴɪ ʜᴀʀɪ 🌌"
-	}
-	if(time >= 4) {
-		res = "sᴇʟᴀᴍᴀᴛ ᴘᴀɢɪ ⛅"
-	}
-	if(time > 10) {
-		res = "sᴇʟᴀᴍᴀᴛ sɪᴀɴɢ 🌅"
-	}
-	if(time >= 15) {
-		res = "sᴇʟᴀᴍᴀᴛ sᴏʀᴇ 🌇"
-	}
-	if(time >= 18) {
-		res = "sᴇʟᴀᴍᴀᴛ ᴍᴀʟᴀᴍ 🌃"
-	}
-	return res
-}
-
-function pickRandom(list) {
-  return list[Math.floor(list.length * Math.random())]
-		 }
+export default handler;
