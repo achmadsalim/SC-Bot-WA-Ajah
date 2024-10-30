@@ -28,5 +28,6 @@ newsletterJid: `${global.idch}`}
 handler.help = ['upaudioch'];
 handler.command = /^(upaudioch|tovnsaluran)$/i;
 handler.tags = ['tools'];
+handler.owner = true
 
 export default handler;
