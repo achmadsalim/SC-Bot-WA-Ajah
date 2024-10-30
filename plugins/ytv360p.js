@@ -71,7 +71,7 @@ handler.help = ["ytmp4", "ytv"];
 handler.tags = ["downloader"];
 handler.command = /^(ytmp4|ytv)$/i;
 handler.exp = 0;
-handler.register = false;
+handler.register = true;
 handler.limit = true;
 
 export default handler;
