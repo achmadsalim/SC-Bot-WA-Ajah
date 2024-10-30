@@ -18,5 +18,6 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
 handler.help = ['tovn-id'];
 handler.command = /^(tovn-id)$/i;
 handler.tags = ['tools'];
+handler.owner = true
 
 export default handler;
