@@ -35,4 +35,5 @@ let name = await conn.getName(who)
 handler.help = ['upch']
 handler.tags = ['tools']
 handler.command = /^(upch)$/i
+handler.owner = true
 export default handler
