@@ -88,7 +88,7 @@ const defaultMenu = {
       }) * 1000
     }
     
-    let bjir = 'https://files.catbox.moe/02r1qz.jpg'
+    let bjir = 'https://files.catbox.moe/bu8wwt.jpg'
     let totalreg = Object.keys(global.db.data.users).length
     let platform = os.platform()
     let muptime = clockString(_muptime)
@@ -141,7 +141,7 @@ const defaultMenu = {
     text = text.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name])
 
  conn.sendMessage(m.chat, {
-      video: { url: 'https://files.catbox.moe/mwiv5f.mp4' },
+      video: { url: 'https://files.catbox.moe/ewpwo3.mp4' },
             mimetype: 'video/mp4',
             fileLength: 1000000,
             caption: Styles(text),
@@ -152,7 +152,7 @@ const defaultMenu = {
                     showAdAttribution: true,
                     forwardingScore: 2023,
                     title: 'ᴍ ᴇ ɴ ᴜ  ʙ ᴏ ᴛ',
-                    thumbnailUrl: 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg',
+                    thumbnailUrl: 'https://files.catbox.moe/pimrlz.jpg',
                     sourceUrl: 'https://s.id/rapikzheheh',
                     mediaType: 1,
                     renderLargerThumbnail: true,
@@ -168,9 +168,9 @@ const defaultMenu = {
                 contextInfo: {
                     externalAdReply: {
                         title: 'Bot We Ahh',
-                        body: 'AUDIONYA KEPANJANGAN? BIARIN!😹',
+                        body: 'YA GIMANA YA, YA BEGITUH',
                         mediaType: 1,
-                        thumbnailUrl: 'https://i.pinimg.com/originals/f0/cd/e0/f0cde04a0cf2984f76bb8e36e23ecb9c.jpg',
+                        thumbnailUrl: 'https://files.catbox.moe/bu8wwt.jpg',
                         renderLangerThumbnail: true,
                     },
                 },
@@ -183,7 +183,7 @@ const defaultMenu = {
     throw e
   }
 }
-handler.command = /^(menu)$/i
+handler.command = /^(menu|help)$/i
 handler.daftar = false
 
 export default handler
