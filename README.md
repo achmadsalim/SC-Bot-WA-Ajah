@@ -1,7 +1,7 @@
 ## MIKA BOT WHATSAPP 
 
 <div id="header" align="center">
-  <img src="https://files.catbox.moe/uctj4k.jpg" width="200" height="200"/>
+  <img src="https://files.catbox.moe/bu8wwt.jpg" width="200" height="200"/>
 </div>
 
 
