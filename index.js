@@ -1,4 +1,3 @@
-
 import yargs from 'yargs';
 import cfonts from 'cfonts';
 import { fileURLToPath } from 'url';
