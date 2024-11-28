@@ -37,7 +37,7 @@ function start(file) {
   let p = fork();
 
   p.on('message', data => {
-    console.log('[✅RECEIVED]', data);
+    console.log('[RECEIVED]', data);
     switch (data) {
       case 'reset':
         p.kill(); // Change here
@@ -48,7 +48,7 @@ function start(file) {
         p.send(process.uptime());
         break;
       default:
-          console.warn('[⚠️ UNRECOGNIZED MESSAGE]', data);
+          console.warn('[UNRECOGNIZED]', data);
     }
   });
 
