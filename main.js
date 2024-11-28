@@ -1,4 +1,5 @@
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
+
 import './config.js'
 
 import path, { join } from 'path'
@@ -14,7 +15,11 @@ import {
     readFileSync,
     watch
 } from 'fs'
-import yargs from 'yargs'
+
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
+const argv = yargs(hideBin(process.argv)).argv;
+
 import { spawn } from 'child_process'
 import lodash from 'lodash'
 import syntaxerror from 'syntax-error'
@@ -24,16 +29,17 @@ import readline from 'readline'
 import { format } from 'util'
 import pino from 'pino'
 import ws from 'ws'
-import {
+const {
     useMultiFileAuthState,
     DisconnectReason,
     fetchLatestBaileysVersion, 
     makeInMemoryStore, 
     makeCacheableSignalKeyStore, 
     PHONENUMBER_MCC
-    } from '@adiwajshing/baileys'
+    } = await import('@adiwajshing/baileys') 
 import { Low, JSONFile } from 'lowdb'
 import { makeWASocket, protoType, serialize } from './lib/simple.js'
+import cloudDBAdapter from './lib/cloudDBAdapter.js'
 import {
     mongoDB,
     mongoDBV2
@@ -87,7 +93,6 @@ global.loadDatabase = async function loadDatabase() {
     global.db.chain = chain(db.data)
 }
 loadDatabase()
-const useStore = !process.argv.includes('--use-store')
 const usePairingCode = !process.argv.includes('--use-pairing-code')
 const useMobile = process.argv.includes('--mobile')
 
@@ -98,21 +103,15 @@ var question = function(text) {
         };
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
-const store = useStore ? makeInMemoryStore({ level: 'silent' }) : undefined
-
-store?.readFromFile('./bot.json')
-// save every 10s
-setInterval(() => {
-	store?.writeToFile('./bot.json')
-}, 10_000)
-
 const { version, isLatest} = await fetchLatestBaileysVersion()
 const { state, saveCreds } = await useMultiFileAuthState('./sessions')
 const connectionOptions = {
         version,
         logger: pino({ level: 'silent' }), 
         printQRInTerminal: !usePairingCode, 
-        browser: ['Ubuntu', 'Chrome', '20.0.04'],
+	// Optional If Linked Device Could'nt Connected
+	// browser: ['Mac OS', 'chrome', '125.0.6422.53']
+        browser: ['Mac OS', 'safari', '5.1.10'],
         auth: { 
          creds: state.creds, 
          keys: makeCacheableSignalKeyStore(state.keys, pino().child({ 
@@ -146,33 +145,37 @@ const connectionOptions = {
                 }
 
                 return message;
-            }
+            }, 
+	connectTimeoutMs: 60000, defaultQueryTimeoutMs: 0, generateHighQualityLinkPreview: true, syncFullHistory: true, markOnlineOnConnect: true
 }
 
 global.conn = makeWASocket(connectionOptions)
 conn.isInit = false
 
-if(usePairingCode && !conn.authState.creds.registered) {
-		if(useMobile) throw new Error('Cannot use pairing code with mobile api')
-		const { registration } = { registration: {} }
-		let RapikzBjir = await question(chalk.yellow('ENTER PASSWORD: \n'));
-    if (RapikzBjir.trim().toLowerCase() !== 'scbyrapikz') {
-      console.log(chalk.red('Oops, the password you entered is incorrect. Please try again.'));
-      process.exit();
-    }
-		let phoneNumber = ''
-		do {
-			phoneNumber = await question(chalk.yellow('OK, the password you entered is correct.Now enter your WhatsApp number : \n'))
-		} while (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v)))
-		rl.close()
-		phoneNumber = phoneNumber.replace(/\D/g,'')
-		console.log(chalk.bgWhite(chalk.blue('Generating code...')))
-		setTimeout(async () => {
-			let code = await conn.requestPairingCode(phoneNumber)
-			code = code?.match(/.{1,4}/g)?.join('-') || code
-			console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
-		}, 3000)
+if (usePairingCode && !conn.authState.creds.registered) {
+		const phoneNumber = await question('Please enter your phone number:\n')
+		const code = await conn.requestPairingCode(phoneNumber)
+		console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
 	}
+async function resetLimit() {
+  try {
+    let list = Object.entries(global.db.data.users);
+    let lim = 25; // Nilai limit default yang ingin di-reset
+
+    list.map(([user, data], i) => {
+      // Hanya reset limit jika limit saat ini <= 25
+      if (data.limit <= lim) {
+        data.limit = lim;
+      }
+    });
+
+    // logs bahwa reset limit telah sukses
+    console.log(`Success Auto Reset Limit`) 
+  } finally {
+    // Setel ulang fungsi reset setiap 24 jam (1 hari)
+    setInterval(() => resetLimit(), 1 * 86400000);
+  }
+}
 
 if (!opts['test']) {
   (await import('./server.js')).default(PORT)
@@ -195,22 +198,33 @@ function clearTmp() {
   })
 }
 
-function clearSessions(folder = 'sessions') {
-	let filename = []
-	readdirSync(folder).forEach(file => filename.push(join(folder, file)))
-	return filename.map(file => {
-		let stats = statSync(file)
-		if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 120)) { // 1 hours
-			console.log('Deleted sessions', file)
-			return unlinkSync(file)
-		}
-		return false
-	})
+async function clearSessions(folder = './sessions') {
+  try {
+    const filenames = await readdirSync(folder);
+    const deletedFiles = await Promise.all(filenames.map(async (file) => {
+      try {
+        const filePath = path.join(folder, file);
+        const stats = await statSync(filePath);
+        if (stats.isFile() && file !== 'creds.json') {
+          await unlinkSync(filePath);
+          console.log('Deleted session:'.main, filePath.info);
+          return filePath;
+        }
+      } catch (err) {
+        console.error(`Error processing ${file}: ${err.message}`);
+      }
+    }));
+    return deletedFiles.filter((file) => file !== null);
+  } catch (err) {
+    console.error(`Error in Clear Sessions: ${err.message}`);
+    return [];
+  } finally {
+    setTimeout(() => clearSessions(folder), 1 * 3600000); // 1 Hours
+  }
 }
 
 async function connectionUpdate(update) {
     const { receivedPendingNotifications, connection, lastDisconnect, isOnline, isNewLogin } = update;
-    global.stopped = connection
 
     if (isNewLogin) {
         conn.isInit = true;
@@ -232,12 +246,8 @@ async function connectionUpdate(update) {
         console.log(chalk.yellow('Menunggu Pesan Baru'));
     }
 
-    if (connection == 'open') {
-        conn.sendMessage("6281312651566@s.whatsapp.net", {text: 'BOT AKTIF\nKETIK `.menu` UNTUK MELIHAT FITUR BOT'})
-    }
-
     if (connection == 'close') {
-        console.log(chalk.red('⏱️ koneksi terputus & mencoba menyambung ulang...'));
+        console.log(chalk.red('⏱️ Koneksi terputus & mencoba menyambung ulang...'));
     }
 
     global.timestamp.connect = new Date;
@@ -261,8 +271,8 @@ global.reloadHandler = async function (restatConn) {
         const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error)*/
     try {
 	// Jika anda menggunakan replit, gunakan yang sevenHoursLater dan tambahkan // pada const Handler
-	// Default: server/vps/panel, replit + 7 jam buat jam indonesia
-        // const sevenHoursLater = Date.now() + 7 * 60 * 60 * 1000;
+	// Default: server/vps/panel, replit + 7 jam buat jam indonesia Jika Tidak Faham Pakai Milidetik 3600000 = 1 Jam Dan Kalikan 7 = 25200000
+        // const sevenHoursLater = Dateindonesia 7 * 60 * 60 * 1000;
         const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error)
       // const Handler = await import(`./handler.js?update=${sevenHoursLater}`).catch(console.error)
         if (Object.keys(Handler || {}).length) handler = Handler
@@ -285,8 +295,8 @@ global.reloadHandler = async function (restatConn) {
     conn.ev.off('creds.update', conn.credsUpdate)
   }
 
-  conn.welcome = '❖━━━━━━[ ᴡᴇʟᴄᴏᴍᴇ ]━━━━━━❖\n\n┏––––––━━━━━━━━•\n│☘︎ @subject\n┣━━━━━━━━┅┅┅\n│( 👋 Hallo @user)\n├[ ɪɴᴛʀᴏ ]—\n│ ɴᴀᴍᴀ: \n│ ᴜᴍᴜʀ: \n│ ɢᴇɴᴅᴇʀ:\n┗––––––━━┅┅┅\n\n––––––┅┅ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ ┅┅––––––\n@desc'
-  conn.bye = '❖━━━━━━[ ʟᴇᴀᴠɪɴɢ ]━━━━━━❖\n𝚂𝚊𝚢𝚘𝚗𝚊𝚛𝚊𝚊 @user 👋😃'
+  conn.welcome = '❖━━━━━━[ Selamat Datang ]━━━━━━❖\n\n┏––––––━━━━━━━━•\n│☘︎ @subject\n┣━━━━━━━━┅┅┅\n│( 👋 Hallo @user)\n├[ Intro ]—\n│ NAMA: \n│ USIA: \n│ JENIS KELAMIN:\n┗––––––━━┅┅┅\n\n––––––┅┅ DESKRIPSI ┅┅––––––\n@desc'
+  conn.bye = '❖━━━━━━[ Meninggalkan ]━━━━━━❖\n𝚂𝚊𝚢𝚘𝚗𝚊𝚛𝚊𝚊 @user 👋😃'
   conn.spromote = '@user Sekarang jadi admin!'
   conn.sdemote = '@user Sekarang bukan lagi admin!'
   conn.sDesc = 'Deskripsi telah diubah menjadi \n@desc'
@@ -305,6 +315,13 @@ global.reloadHandler = async function (restatConn) {
   conn.connectionUpdate = connectionUpdate.bind(global.conn)
   conn.credsUpdate = saveCreds.bind(global.conn)
 
+  conn.ev.on('call', async (call) => {
+    console.log('Panggilan diterima:', call);
+    if (call.status === 'ringing') {
+      await conn.rejectCall(call.id);
+      console.log('Panggilan ditolak');
+    }
+  })
   conn.ev.on('messages.upsert', conn.handler)
   conn.ev.on('group-participants.update', conn.participantsUpdate)
   conn.ev.on('groups.update', conn.groupsUpdate)
@@ -377,16 +394,18 @@ async function _quickTest() {
         return Promise.race([
             new Promise(resolve => {
                 p.on('close', code => {
-                    resolve(code !== 127)
-                })
+                    resolve(code !== 127);
+                });
             }),
             new Promise(resolve => {
-                p.on('error', _ => resolve(false))
+                p.on('error', _ => resolve(false));
             })
-        ])
-    }))
-    let [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test
-    console.log(test)
+        ]);
+    }));
+
+    let [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test;
+    console.log(test);
+
     let s = global.support = {
         ffmpeg,
         ffprobe,
@@ -395,23 +414,23 @@ async function _quickTest() {
         magick,
         gm,
         find
-    }
-    // require('./lib/sticker').support = s
-    Object.freeze(global.support)
+    };
+
+    Object.freeze(global.support);
 
     if (!s.ffmpeg) {
-        conn.logger.warn(`Silahkan install ffmpeg terlebih dahulu agar bisa mengirim video`)
+        conn.logger.warn(`Silahkan install ffmpeg terlebih dahulu agar bisa mengirim video`);
     }
 
     if (s.ffmpeg && !s.ffmpegWebp) {
-        conn.logger.warn('Sticker Mungkin Tidak Beranimasi tanpa libwebp di ffmpeg (--enable-ibwebp while compiling ffmpeg)')
+        conn.logger.warn('Sticker Mungkin Tidak Beranimasi tanpa libwebp di ffmpeg (--enable-libwebp while compiling ffmpeg)');
     }
 
     if (!s.convert && !s.magick && !s.gm) {
-        conn.logger.warn('Fitur Stiker Mungkin Tidak Bekerja Tanpa imagemagick dan libwebp di ffmpeg belum terinstall (pkg install imagemagick)')
+        conn.logger.warn('Fitur Stiker Mungkin Tidak Bekerja Tanpa imagemagick dan libwebp di ffmpeg belum terinstall (pkg install imagemagick)');
     }
-
 }
+
 _quickTest()
     .then(() => conn.logger.info('☑️ Quick Test Done , nama file session ~> creds.json'))
-    .catch(console.error)
+    .catch(console.error);
