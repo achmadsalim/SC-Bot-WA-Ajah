@@ -1,89 +1,102 @@
-/* 
-ini play beton
-
-* nanas
-*/
-
-const {
-  proto,
-  generateWAMessageFromContent,
-  prepareWAMessageMedia
-} = (await import("@adiwajshing/baileys"))["default"];
 import yts from 'yt-search';
-var handler = async (m, {
-  conn,
-  command,
-  text,
-  usedPrefix
-}) => {
-  if (!text) {
-    throw `Contoh: ${usedPrefix + command} cupid`;
-  }
-  m.reply(wait);
+import fetch from 'node-fetch'
+import axios from 'axios'
+async function yta(url) {
+    const response = await axios.post('https://dl.excdn.us.kg', { url }, {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.data;
+}
+
+function formats(views) {
+    if (views >= 1000000) {
+        return (views / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (views >= 1000) {
+        return (views / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return views.toString();
+}
+
+const handler = async (m, { conn, text, usedPrefix }) => {
+  if (!text) throw 'Masukkan Judul / Link Dari YouTube!';
   try {
-    let results = await yts(text);
-    let tes = results.all[0]
-    let {
-      title,
-      thumbnail,
-      timestamp,
-      views,
-      ago,
-      url
-    } = tes;
-    let teks = "\n*" + title + "*" + "\n\n*Durasi:* " + timestamp + "\n*Views:* " + views + "\n*Upload:* " + ago + "\n*Link:* " + url + "\n";
-    let msg = generateWAMessageFromContent(m.chat, {
-      'viewOnceMessage': {
-        'message': {
-          'messageContextInfo': {
-            'deviceListMetadata': {},
-            'deviceListMetadataVersion': 0x2
-          },
-          'interactiveMessage': proto.Message.InteractiveMessage.create({
-            'body': proto.Message.InteractiveMessage.Body.create({
-              'text': teks
-            }),
-            'footer': proto.Message.InteractiveMessage.Footer.create({
-              'text': wm
-            }),
-            'header': proto.Message.InteractiveMessage.Header.create({
-              'hasMediaAttachment': false,
-              ...(await prepareWAMessageMedia({
-                'image': {
-                  'url': thumbnail
-                }
-              }, {
-                'upload': conn.waUploadToServer
-              }))
-            }),
-            'nativeFlowMessage': proto.Message.InteractiveMessage.NativeFlowMessage.create({
-              'buttons': [{
-                'name': "quick_reply",
-                'buttonParamsJson': "{\"display_text\":\"Audio\",\"id\":\".yta " + url + "\"}"
-              }, {
-                'name': "quick_reply",
-                'buttonParamsJson': "{\"display_text\":\"Video\",\"id\":\".ytv " + url + "\"}"
-              }, {
-                'name': "quick_reply",
-                'buttonParamsJson': "{\"display_text\":\"All\",\"id\":\".ytdl " + url + "\"}"
-              }]
-            })
-          })
-        }
+    let data = (await yts(text)).all
+    let hasil = data[~~(Math.random() * data.length)]
+    if (!hasil) throw 'Video/Audio Tidak Ditemukan';
+    if (hasil.seconds >= 7200) {
+      return conn.reply(m.chat, 'Video lebih dari 2 jam!', m);
+    } else {
+      let audioUrl;
+      try {
+        audioUrl = await yta(hasil.url)
+      } catch (e) {
+        conn.reply(m.chat, 'Tunggu sebentar...', m);
+        audioUrl = await yta(hasil.url);
       }
-    }, {
-      'quoted': m
-    });
-    return await conn.relayMessage(m.chat, msg.message, {});
-  } catch (err) {
-    conn.sendFile(m.chat, eror, "anu.mp3", null, m, true, {
-      'type': "audioMessage",
-      'ptt': true
-    });
+
+      let caption = '';
+      caption += `∘ Judul : ${hasil.title}\n`;
+      caption += `∘ Ext : Search\n`;
+      caption += `∘ ID : ${hasil.videoId}\n`;
+      caption += `∘ Durasi : ${hasil.timestamp}\n`;
+      caption += `∘ Penonton : ${hasil.views}\n`;
+      caption += `∘ Diunggah : ${hasil.ago}\n`;
+      caption += `∘ Penulis : ${hasil.author.name}\n`;
+      caption += `∘ Channel : ${hasil.author.url}\n`;
+      caption += `∘ Url : ${hasil.url}\n`;
+      caption += `∘ Deskripsi : ${hasil.description}\n`;
+      caption += `∘ Thumbnail : ${hasil.image}`;
+
+      await conn.relayMessage(m.chat, {
+        extendedTextMessage: {
+          text: caption,
+          contextInfo: {
+            externalAdReply: {
+              title: hasil.title,
+              mediaType: 1,
+              previewType: 0,
+              renderLargerThumbnail: true,
+              thumbnailUrl: hasil.image,
+              sourceUrl: audioUrl.fileUrl
+            }
+          },
+          mentions: [m.sender]
+        }
+      }, {});
+
+      await conn.sendMessage(m.chat, {
+        audio: {
+          url: audioUrl.fileUrl
+        },
+        mimetype: 'audio/mpeg',
+        contextInfo: {
+          externalAdReply: {
+            title: hasil.title,
+            body: "",
+            thumbnailUrl: hasil.image,
+            sourceUrl: audioUrl.fileUrl,
+            mediaType: 1,
+            showAdAttribution: true,
+            renderLargerThumbnail: true
+          }
+        }
+      }, {
+        quoted: m
+      });
+    }
+  } catch (e) {
+    conn.reply(m.chat, `*Error:* ` + e.message, m);
   }
 };
-handler.help = ["play"];
-handler.tags = ["downloader"];
-handler.command = /^(play)$/i;
+
+handler.command = handler.help = ['play', 'song'];
+handler.tags = ['downloader'];
+handler.exp = 0;
 handler.limit = true;
+handler.premium = false;
+
 export default handler;
