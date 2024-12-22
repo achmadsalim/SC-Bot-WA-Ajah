@@ -111,7 +111,7 @@ const connectionOptions = {
         printQRInTerminal: !usePairingCode, 
 	// Optional If Linked Device Could'nt Connected
 	// browser: ['Mac OS', 'chrome', '125.0.6422.53']
-        browser: ['Mac OS', 'safari', '5.1.10'],
+        browser: ["Ubuntu", "Chrome", "20.0.04"],
         auth: { 
          creds: state.creds, 
          keys: makeCacheableSignalKeyStore(state.keys, pino().child({ 
