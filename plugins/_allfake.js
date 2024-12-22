@@ -66,12 +66,12 @@ handler.all = async function (m) {
             forwardingScore: 9999,
             externalAdReply: {
                 showAdAttribution: true,
-                title: "ELAINA - AI",
-                body: global.ucapan,
+                title: global.ucapan,
+                body: "BGG ( BOT GATAU GABUT )",
                 mediaUrl: sgc,
                 description: wm3,
                 previewType: "PHOTO",
-                thumbnail: await (await fetch('https://i.pinimg.com/736x/7c/80/eb/7c80eb7a7aacd359ccbd678fbca6a565.jpg')).buffer(),
+                thumbnail: await (await fetch('https://files.catbox.moe/2hrl62.jpg')).buffer(),
                 sourceUrl: "https://rapikz-kwontwol.github.io/gwejh-aja-bjir/"
             }
         }
@@ -104,7 +104,7 @@ handler.all = async function (m) {
             description: global.sig, 
             title: wm3,
             body: wm,
-            thumbnailUrl: 'https://i.pinimg.com/736x/7c/80/eb/7c80eb7a7aacd359ccbd678fbca6a565.jpg',
+            thumbnailUrl: 'https://files.catbox.moe/2hrl62.jpg',
             sourceUrl: sig
     }
     } }
@@ -115,7 +115,7 @@ global.fakefb = {
             description: "https://www.Facebook.com/zuck", 
             title: wm3,
             body: wm,
-            thumbnailUrl: 'https://i.pinimg.com/736x/7c/80/eb/7c80eb7a7aacd359ccbd678fbca6a565.jpg',
+            thumbnailUrl: 'https://files.catbox.moe/2hrl62.jpg',
             sourceUrl: sgc
     }
     } }
