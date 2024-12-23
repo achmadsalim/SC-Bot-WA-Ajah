@@ -67,7 +67,7 @@ handler.all = async function (m) {
             externalAdReply: {
                 showAdAttribution: true,
                 title: global.ucapan,
-                body: "BGG ( BOT GATAU GABUT )",
+                body: "BGGBR ( BOT GATAU GABUT BY RAPIKZ )",
                 mediaUrl: sgc,
                 description: wm3,
                 previewType: "PHOTO",
