@@ -2,9 +2,10 @@ const { generateWAMessageContent, generateWAMessageFromContent, proto } = (await
 
 const handler = async (m, { conn, command, text, usedPrefix }) => {
 let name = m.pushName || conn.getName(m.sender);
-let pan = INI OWNERKU KAK
-
-const url = "https://telegra.ph/file/b8a7ca17b5925a920dea9.jpg"
+let duar = `INI OWNERKU KAK`
+let botnyah = conn.user.jid.split`@`[0]
+const url1 = "https://files.catbox.moe/mp6330.jpg"
+const url2 = "https://files.catbox.moe/lbrrgo.jpg"
 async function image(url) {
 const { imageMessage } = await generateWAMessageContent({
     image: {
@@ -24,21 +25,21 @@ const { imageMessage } = await generateWAMessageContent({
           message: {
             interactiveMessage: {
               body: {
-                text: pan   },
+                text: duar   },
               carouselMessage: {
                 cards: [
                   {
                     header: {
-                      imageMessage: await image(url),
+                      imageMessage: await image(url1),
                       hasMediaAttachment: true,
                     },
                     body: { text: 
-CHAT OWNERKU },
+`CHAT OWNERKU` },
                     nativeFlowMessage: {
                       buttons: [
                   {
-                    name: "cta_url",
-                    buttonParamsJson: {"display_text":" Chat Owner ","url":"https://wa.me/6281312651566","merchant_url":"https://wa.me/6281312651566"}
+                    "name": "cta_url",
+            "buttonParamsJson": `{"display_text":"CHAT OWNER","url":"https://wa.me/${global.nomorown}","merchant_url":"https://wa.me/${global.nomorown}"}`
                   },
                       ],
                     },
@@ -46,16 +47,16 @@ CHAT OWNERKU },
                   
                   {
                     header: {
-                      imageMessage: await image(url),
+                      imageMessage: await image(url2),
                       hasMediaAttachment: true,
                     },
                                         body: { text: 
-NOMOR BOT KU },
+`NOMOR BOT KU` },
                     nativeFlowMessage: {
                       buttons: [
                   {
-                    name: "cta_url",
-                    buttonParamsJson: {"display_text":" Chat Bot","url":"https://wa.me/6281572920773","merchant_url":"https://wa.me/6281572920773"}
+"name": "cta_url",
+            "buttonParamsJson": `{"display_text":"CHAT BOT","url":"https://wa.me/${botnyah}","merchant_url":"https://wa.me/${botnyah}"}`
                   },
                       ],
                     },
@@ -78,5 +79,5 @@ NOMOR BOT KU },
 
 handler.help = ["owner"];
 handler.tags = ["main"];
-handler.command = /^(owner)$/i;
+handler.command = /^(owner|creator)$/i;
 export default handler
