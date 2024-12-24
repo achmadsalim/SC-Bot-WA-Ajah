@@ -1,15 +1,5 @@
 import yts from 'yt-search';
 import fetch from 'node-fetch'
-import axios from 'axios'
-async function yta(url) {
-    const response = await axios.post('https://dl.excdn.us.kg', { url }, {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-    });
-    return response.data;
-}
 
 function formats(views) {
     if (views >= 1000000) {
@@ -26,16 +16,17 @@ const handler = async (m, { conn, text, usedPrefix }) => {
   try {
     let data = (await yts(text)).all
     let hasil = data[~~(Math.random() * data.length)]
+    let gabut = await fetch(`https://api.betabotz.eu.org/api/download/yt?url=${hasil.url}&apikey=btzziaulhaq`)
     if (!hasil) throw 'Video/Audio Tidak Ditemukan';
     if (hasil.seconds >= 7200) {
       return conn.reply(m.chat, 'Video lebih dari 2 jam!', m);
     } else {
       let audioUrl;
       try {
-        audioUrl = await yta(hasil.url)
+        audioUrl = await gabut.json() 
       } catch (e) {
         conn.reply(m.chat, 'Tunggu sebentar...', m);
-        audioUrl = await yta(hasil.url);
+        audioUrl = await gabut.json();
       }
 
       let caption = '';
@@ -61,7 +52,7 @@ const handler = async (m, { conn, text, usedPrefix }) => {
               previewType: 0,
               renderLargerThumbnail: true,
               thumbnailUrl: hasil.image,
-              sourceUrl: audioUrl.fileUrl
+              sourceUrl: audioUrl.result.mp3
             }
           },
           mentions: [m.sender]
@@ -70,7 +61,7 @@ const handler = async (m, { conn, text, usedPrefix }) => {
 
       await conn.sendMessage(m.chat, {
         audio: {
-          url: audioUrl.fileUrl
+          url: audioUrl.result.mp3
         },
         mimetype: 'audio/mpeg',
         contextInfo: {
@@ -78,7 +69,7 @@ const handler = async (m, { conn, text, usedPrefix }) => {
             title: hasil.title,
             body: "",
             thumbnailUrl: hasil.image,
-            sourceUrl: audioUrl.fileUrl,
+            sourceUrl: audioUrl.result.mp3,
             mediaType: 1,
             showAdAttribution: true,
             renderLargerThumbnail: true
