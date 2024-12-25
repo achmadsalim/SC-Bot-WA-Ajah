@@ -1,3 +1,4 @@
+// beton njir
 const { generateWAMessageContent, generateWAMessageFromContent, proto } = (await import('@adiwajshing/baileys')).default;
 
 const handler = async (m, { conn, command, text, usedPrefix }) => {
