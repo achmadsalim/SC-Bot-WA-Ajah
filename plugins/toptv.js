@@ -1,3 +1,4 @@
+// VN VIDEO BULET NJR
 import { generateWAMessageContent } from "@adiwajshing/baileys";
 
 const handler = async (m, { conn, usedPrefix, command }) => {
