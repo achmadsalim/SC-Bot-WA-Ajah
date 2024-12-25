@@ -1,3 +1,4 @@
+// bahaya juga njir kalo viral awkwkowwowk
 import { sticker } from '../lib/sticker.js'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
