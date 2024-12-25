@@ -1,5 +1,5 @@
 /*
-BISA TANYA GAMBAR NJIR
+BISA TANYA GAMBAR NJIR HAHA
 */
 import uploadFile from '../lib/uploadFile.js'
 import uploadImage from '../lib/uploadImage.js'
