@@ -1,3 +1,4 @@
+// bahaya njir
 import { sticker } from '../lib/sticker.js'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
