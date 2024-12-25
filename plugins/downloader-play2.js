@@ -1,8 +1,8 @@
-// Play YouTube -Haidar
+// Play YouTube By Mana Ku tw
 // screp : https://whatsapp.com/channel/0029VavOkL00lwgmRLmffH1i/159
-// https://whatsapp.com/channel/0029VamzFetC6ZvcD1qde90Z
 import axios from "axios";
 import yts from "yt-search";
+import fetch from 'node-fetch';
 
 const formatAudio = ['mp3', 'm4a', 'webm', 'acc', 'flac', 'opus', 'ogg', 'wav'];
 const formatVideo = ['360', '480', '720', '1080', '1440', '4k'];
@@ -67,60 +67,92 @@ const ddownr = {
     }
   }
 };
-
-const handler = async (m, { conn, usedPrefix, text, command }) => {
-  if (!text) return m.reply(`Ketikkan nama lagu yang kamu sedang cari, misal\n${usedPrefix + command} dj kane`);
-
-  try {
-    const search = await yts(text);
-    const video = search.all[0];
-
-    if (!video) {
-      return m.reply('Lagu yang Anda cari tidak ditemukan.');
+function formats(views) {
+    if (views >= 1000000) {
+        return (views / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
     }
+    if (views >= 1000) {
+        return (views / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return views.toString();
+}
 
-    const detail = `*Youtube Audio Play*\n\n❏ Title : ${video.title}\n` +
-      `❏ View : ${video.views}\n` +
-      `❏ Author : ${video.author.name}\n` +
-      `❏ Upload : ${video.ago}\n` +
-      `🔗 Url : ${video.url}\n` +
-      `_Proses pengunduhan audio..._`;
-
-    await conn.sendMessage(m.chat, {
-      text: detail,
-      contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        externalAdReply: {
-          title: video.title,
-          mediaType: 1,
-          previewType: 1,
-          body: `YT Play By Mahiru-MD`,
-          thumbnailUrl: video.image,
-          renderLargerThumbnail: true,
-          mediaUrl: video.url,
-          sourceUrl: video.url
-        }
+const handler = async (m, { conn, text, usedPrefix }) => {
+  if (!text) throw 'Masukkan Judul / Link Dari YouTube!';
+  try {
+    let data = (await yts(text)).all
+    let hasil = data[~~(Math.random() * data.length)]
+    if (!hasil) throw 'Video/Audio Tidak Ditemukan';
+    if (hasil.seconds >= 7200) {
+      return conn.reply(m.chat, 'Video lebih dari 2 jam!', m);
+    } else {
+      let audioUrl;
+      try {
+        audioUrl = await ddownr.download(hasil.url, "mp3")
+      } catch (e) {
+        conn.reply(m.chat, 'Tunggu sebentar...', m);
+        audioUrl = await ddownr.download(video.url, "mp3");
       }
-    }, { quoted: m });
 
-    const result = await ddownr.download(video.url, "mp3");
-    if (!result.downloadUrl) return m.reply('Gagal mengunduh audio.');
+      let caption = '';
+      caption += `∘ Judul : ${hasil.title}\n`;
+      caption += `∘ Ext : Search\n`;
+      caption += `∘ ID : ${hasil.videoId}\n`;
+      caption += `∘ Durasi : ${hasil.timestamp}\n`;
+      caption += `∘ Penonton : ${hasil.views}\n`;
+      caption += `∘ Diunggah : ${hasil.ago}\n`;
+      caption += `∘ Penulis : ${hasil.author.name}\n`;
+      caption += `∘ Channel : ${hasil.author.url}\n`;
+      caption += `∘ Url : ${hasil.url}\n`;
+      caption += `∘ Deskripsi : ${hasil.description}\n`;
+      caption += `∘ Thumbnail : ${hasil.image}`;
 
-    await conn.sendMessage(m.chat, {
-      audio: { url: result.downloadUrl },
-      mimetype: 'audio/mpeg',
-    }, { quoted: m });
-  } catch (error) {
-    m.reply(`Terjadi kesalahan:\n${error.message}`);
+      await conn.relayMessage(m.chat, {
+        extendedTextMessage: {
+          text: caption,
+          contextInfo: {
+            externalAdReply: {
+              title: hasil.title,
+              mediaType: 1,
+              previewType: 0,
+              renderLargerThumbnail: true,
+              thumbnailUrl: hasil.image,
+              sourceUrl: audioUrl.downloadUrl
+            }
+          },
+          mentions: [m.sender]
+        }
+      }, {});
+
+      await conn.sendMessage(m.chat, {
+        audio: {
+          url: audioUrl.downloadUrl
+        },
+        mimetype: 'audio/mpeg',
+        contextInfo: {
+          externalAdReply: {
+            title: hasil.title,
+            body: "",
+            thumbnailUrl: hasil.image,
+            sourceUrl: audioUrl.downloadUrl,
+            mediaType: 1,
+            showAdAttribution: true,
+            renderLargerThumbnail: true
+          }
+        }
+      }, {
+        quoted: m
+      });
+    }
+  } catch (e) {
+    conn.reply(m.chat, `*Error:* ` + e.message, m);
   }
 };
 
-handler.help = ['play'].map(v => v + ' <URL atau Judul Lagu>');
-handler.tags = ['search', 'sound'];
-handler.command = /^(play2|song2|lagu2|carikanlagu2|cari kan lagu2|songs2|musik2|music2)$/i;
+handler.command = handler.help = ['play2', 'song2'];
+handler.tags = ['downloader'];
+handler.exp = 0;
+handler.limit = true;
+handler.premium = false;
 
 export default handler;
-// Play YouTube -Haidar
-// screp : https://whatsapp.com/channel/0029VavOkL00lwgmRLmffH1i/159
-// https://whatsapp.com/channel/0029VamzFetC6ZvcD1qde90Z
