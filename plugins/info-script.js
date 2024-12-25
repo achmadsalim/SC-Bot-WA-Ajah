@@ -1,3 +1,4 @@
+// simpel ae
 let handler = async (m) => {
 
 let anu = `https://github.com/Rapikz-kwontwol/SC-Bot-WA-Ajah`
