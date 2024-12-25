@@ -1,3 +1,5 @@
+// scrapernya dari : https://whatsapp.com/channel/0029VavOkL00lwgmRLmffH1i/159
+// copas plugin ya copas aja jan klem ini punya lu
 import axios from "axios";
 import yts from "yt-search";
 import fetch from 'node-fetch';
