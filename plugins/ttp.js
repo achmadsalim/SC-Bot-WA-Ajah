@@ -3,7 +3,7 @@ import { sticker } from '../lib/sticker.js'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
 if (!text) throw `Contoh penggunaan: ${usedPrefix + command} Crot Crot`;
-let stiker = await sticker(null, `https://btch.us.kg/ttp?text=${text}`, '', '')
+let stiker = await sticker(null, `https://api.tioo.eu.org/ttp?text=${text}`, '', '')
 conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)  
 } 
 
