@@ -29,31 +29,31 @@ global.sgh = 'https://github.com/ZurrBotz' //github
 global.sgc = '' //group whatsapp
 global.saluran = '' //saluran whatsapp
 global.syt = '' //youtube
-global.swa = 'https://wa.me/6281211037493' //whatsapp
+global.swa = 'https://wa.me/6287824856453' //whatsapp
 global.tele = 'https://t.me/zurabj' //telegram
 global.sdc = 'https://discord.gg/' //discord
 global.snh = 'https://nhentai.net/' //nhentai
 global.idch = '120363318498252170@newsletter' // ID CHANNEL LU
 
 /*============== PAYMENT ==============*/
-global.pdana = '081211037493' //pulsa1
-global.ppulsa = '081575159679' //pulsa2
+global.pdana = '' //pulsa1
+global.ppulsa = '' //pulsa2
 global.povo = '' //ovo
 global.gopay = '' //gopay
-global.dana = '081211037493 //dana
+global.dana = ' //dana
 global.sid = 's.id' //s.id
 global.psaweria = 'https://saweria.com/' //saweria
 
 /*============== NOMOR ==============*/
-global.nomorwa = '081211037493' //whatsapp
-global.nomorbot = '6281575159679' //nomor Bot
-global.nomorown = '081211037493' //nomor Owner
+global.nomorwa = '6287824856453' //whatsapp
+global.nomorbot = '6287824856453' //nomor Bot
+global.nomorown = '6287824856453' //nomor Owner
 global.namebot = 'ᴇʟᴀɪɴᴀ ᴀɪ' //nama Bot
 global.nameown = '尺卂千丨Ҩツ' //nama Owner
 
 /*============== STAFF ==============*/
 global.owner = [
-  ['081211037493', 'RAPIKZ', true] //creator/owner
+  ['6287824856453', 'RAPIKZ', true] //creator/owner
 ] //put your number here
 global.mods = [] //moderator
 global.prems = [] //prem bukan disini
@@ -103,12 +103,12 @@ global.author = global.wm
 
 
 /*============== LOGO ==============*/
-global.thumb = 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg' //thumbnail
-global.thumb2 = 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg'
-global.thumbbc = 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg' //broadcast
+global.thumb = 'https://fantox-cosplay-api.onrender.com/' //thumbnail
+global.thumb2 = 'https://fantox-cosplay-api.onrender.com/'
+global.thumbbc = 'https://fantox-cosplay-api.onrender.com/' //broadcast
 global.giflogo = 'https://telegra.ph/file/a46ab7fa39338b1f54d5a.mp4'
-global.thumblvlup = 'https://i.pinimg.com/originals/ab/f8/10/abf81045e59fa3d6027fc08edf631a55.jpg'
-global.hwaifu = ['https://i.pinimg.com/originals/ed/34/f8/ed34f88af161e6278993e1598c29a621.jpg',
+global.thumblvlup = 'https://fantox-cosplay-api.onrender.com'
+global.hwaifu = ['https://fantox-cosplay-api.onrender.com',
 'https://i.pinimg.com/originals/85/4d/bb/854dbbd30304cd69f305352f0183fad0.jpg',
 'https://i.pinimg.com/originals/32/2c/a4/322ca456fa2cdec4b717895a65adfa8d.jpg',
 'https://i.pinimg.com/originals/f2/dd/cc/f2ddccd5a1b89d2302cf75c6520c58dd.png',
